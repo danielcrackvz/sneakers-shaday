@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sneakers Shaday | Tienda de Sneakers Urbanos</title>
+  <meta name="description" content="Catálogo de sneakers urbanos y zapatillas de colección en Santa Cruz - Bolivia. Sneakers Shaday con Supabase." />
+  
+  <!-- Google Fonts & Iconos (FontAwesome) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- SDK OFICIAL DE SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Hoja de estilos personalizada -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Barra superior informativa con estado de base de datos -->
+  <div class="top-announcement">
+    <p>
+      <i class="fa-solid fa-truck-fast"></i> Envíos a toda Bolivia | Entregas directas en Santa Cruz y Warnes
+      <span id="dbStatusBadge" style="margin-left: 14px; background: rgba(255,255,255,0.18); padding: 2px 10px; border-radius: 99px; font-size: 0.75rem;">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Conectando...
+      </span>
+    </p>
+  </div>
+
+  <!-- Cabecera y Navegación Principal -->
+  <header class="main-header">
+    <div class="header-container">
+      <a href="#" class="brand-logo">
+        <i class="fa-solid fa-shoe-prints"></i>
+        <span>SHADAY<span>.</span></span>
+      </a>
+
+      <!-- Buscador en tiempo real -->
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Buscar entre los 30 modelos por nombre o marca..." />
+      </div>
+
+      <!-- Acciones de cabecera -->
+      <div class="header-actions">
+        <a href="#catalogo" class="nav-btn"><i class="fa-solid fa-fire"></i> Catálogo</a>
+        <button id="cartBtn" class="cart-button" title="Ver Carrito">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span id="cartCount" class="cart-badge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner Principal / Hero -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <span class="hero-tag"><i class="fa-solid fa-bolt"></i> Nueva Colección Urbana 2026</span>
+      <h1>EL DROP QUE ESTABAS ESPERANDO</h1>
+      <p>Catálogo completo conectado en tiempo real con Supabase. Zapatillas originales con entregas y confirmación vía WhatsApp.</p>
+      <div class="hero-buttons">
+        <a href="#catalogo" class="btn-primary"><i class="fa-solid fa-bag-shopping"></i> Explorar Catálogo</a>
+        <a href="https://wa.me/59175512345?text=Hola%20Sneakers%20Shaday,%20quiero%20hacer%20una%20consulta" target="_blank" class="btn-secondary">
+          <i class="fa-brands fa-whatsapp"></i> Contactar por WhatsApp
+        </a>
+      </div>
+    </div>
+    <div class="hero-image-wrapper">
+      <img src="https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&q=80" alt="Sneakers Shaday Banner" class="hero-img" />
+    </div>
+  </section>
+
+  <!-- Filtros y Navegación de Categorías -->
+  <section class="catalog-section" id="catalogo">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Catálogo Completo de Sneakers</h2>
+        <p class="section-subtitle">Stock dinámico sincronizado desde la base de datos PostgreSQL</p>
+      </div>
+      <div class="filter-count">
+        <span id="resultsCount">Cargando modelos...</span>
+      </div>
+    </div>
+
+    <!-- Barra de Filtros -->
+    <div class="filters-container">
+      <div class="category-pills" id="categoryPills">
+        <button class="pill active" data-category="todos">Todos</button>
+        <button class="pill" data-category="Jordan">Jordan</button>
+        <button class="pill" data-category="Nike">Nike</button>
+        <button class="pill" data-category="Adidas">Adidas</button>
+        <button class="pill" data-category="New Balance">New Balance</button>
+        <button class="pill" data-category="Vans">Vans</button>
+        <button class="pill" data-category="Puma">Puma</button>
+      </div>
+
+      <div class="secondary-filters">
+        <!-- Filtro por Talla -->
+        <select id="sizeFilter" class="filter-select">
+          <option value="">Todas las Tallas</option>
+          <option value="37">Talla 37</option>
+          <option value="38">Talla 38</option>
+          <option value="39">Talla 39</option>
+          <option value="40">Talla 40</option>
+          <option value="41">Talla 41</option>
+          <option value="42">Talla 42</option>
+          <option value="43">Talla 43</option>
+          <option value="44">Talla 44</option>
+        </select>
+
+        <!-- Filtro por Precio -->
+        <select id="sortFilter" class="filter-select">
+          <option value="default">Ordenar: Novedades</option>
+          <option value="price-asc">Precio: Menor a Mayor</option>
+          <option value="price-desc">Precio: Mayor a Menor</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Grid de Productos -->
+    <div class="products-grid" id="productsGrid">
+      <!-- Se inyecta dinámicamente desde Supabase -->
+    </div>
+  </section>
+
+  <!-- Ventajas / Confianza -->
+  <section class="features-section">
+    <div class="feature-card">
+      <div class="feature-icon"><i class="fa-solid fa-database"></i></div>
+      <h3>Base de Datos en Tiempo Real</h3>
+      <p>Consultas fluidas a Supabase sin recargas lentas ni caídas de servidor.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="fa-solid fa-qrcode"></i></div>
+      <h3>Pago con Código QR</h3>
+      <p>Aceptamos pagos directos por QR simple del Banco Central de Bolivia y transferencias.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="fa-brands fa-whatsapp"></i></div>
+      <h3>Atención por WhatsApp</h3>
+      <p>Envía tu pedido y recibe fotos reales de tu par antes de despacharlo a tu domicilio.</p>
+    </div>
+  </section>
+
+  <!-- MODAL: DETALLE DEL PRODUCTO -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-content">
+      <button class="close-modal-btn" id="closeModal">&times;</button>
+      <div class="modal-body" id="modalProductDetails">
+        <!-- Inyectado por JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL LATERAL: CARRITO DE COMPRAS -->
+  <div class="cart-drawer-overlay" id="cartOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="cart-drawer-header">
+      <h3><i class="fa-solid fa-bag-shopping"></i> Tu Carrito</h3>
+      <button class="close-cart-btn" id="closeCart">&times;</button>
+    </div>
+
+    <div class="cart-items-container" id="cartItemsList">
+      <!-- Elementos del carrito inyectados por JS -->
+    </div>
+
+    <div class="cart-drawer-footer">
+      <div class="cart-subtotal">
+        <span>Total estimado:</span>
+        <strong id="cartTotalPrice">0 Bs.</strong>
+      </div>
+      <button id="checkoutBtn" class="btn-whatsapp-checkout">
+        <i class="fa-brands fa-whatsapp"></i> Pedir Todo por WhatsApp
+      </button>
+      <button id="clearCartBtn" class="btn-clear-cart">Vaciar Carrito</button>
+    </div>
+  </aside>
+
+  <!-- Pie de Página -->
+  <footer class="main-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h3>SNEAKERS SHADAY</h3>
+        <p>Tu tienda especializada en calzado urbano, sneakers y moda streetwear en Warnes y Santa Cruz, Bolivia.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Horarios de Atención</h4>
+        <p>Lunes a Sábado: 08:30 - 20:00</p>
+        <p>Pedidos web y consultas WhatsApp: 24/7</p>
+      </div>
+      <div class="footer-col">
+        <h4>Tecnología Implementada</h4>
+        <p><i class="fa-brands fa-js"></i> HTML5, CSS3, JavaScript Vanilla</p>
+        <p><i class="fa-solid fa-database"></i> Supabase (PostgreSQL Cloud)</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Sneakers Shaday - Proyecto de Grado BTH Sistemas Informáticos.</p>
+    </div>
+  </footer>
+
+  <!-- Script Principal -->
+  <script src="app.js"></script>
+</body>
+</html>
