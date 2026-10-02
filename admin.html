@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sneakers Shaday | Panel de Administración</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- PANTALLA DE ACCESO RESTRINGIDO SI NO ESTÁ AUTENTICADO -->
+  <div id="adminAuthLock" style="display:none; position:fixed; inset:0; background:#0b0f19; z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; padding:36px; border-radius:18px; max-width:400px; text-align:center;">
+      <i class="fa-solid fa-lock" style="font-size:3rem; color:#ef4444; margin-bottom:14px;"></i>
+      <h2 style="font-weight:800; margin-bottom:8px;">Acceso Restringido</h2>
+      <p style="color:#64748b; font-size:0.9rem; margin-bottom:20px;">Debes iniciar sesión con una cuenta de Administrador o Vendedor para entrar a este panel.</p>
+      <a href="index.html" class="btn-primary" style="display:inline-flex; text-decoration:none; justify-content:center; width:100%;">
+        <i class="fa-solid fa-arrow-left"></i> Ir al Login de la Tienda
+      </a>
+    </div>
+  </div>
+
+  <div class="admin-layout" id="adminMainLayout">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon"><i class="fa-solid fa-shoe-prints"></i></div>
+        <div class="brand-text">
+          <h2>SHADAY</h2>
+          <span>PANEL DE CONTROL</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="productos">
+          <i class="fa-solid fa-boxes-stacked"></i>
+          <span>Productos / Tenis</span>
+        </button>
+        <button class="nav-item" data-tab="compras">
+          <i class="fa-solid fa-cart-flatbed"></i>
+          <span>Compras (Lotes)</span>
+        </button>
+        <button class="nav-item" data-tab="ventas">
+          <i class="fa-solid fa-receipt"></i>
+          <span>Ventas Realizadas</span>
+        </button>
+        <button class="nav-item" data-tab="proveedores">
+          <i class="fa-solid fa-truck-ramp-box"></i>
+          <span>Proveedores</span>
+        </button>
+        <!-- NUEVO MÓDULO: USUARIOS Y VENDEDORES -->
+        <button class="nav-item" data-tab="usuarios">
+          <i class="fa-solid fa-users-gear"></i>
+          <span>Usuarios y Vendedores</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="index.html" target="_blank" class="btn-view-store">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Tienda Pública
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-title">
+          <h1 id="pageTitle">Resumen General</h1>
+          <p id="pageSubtitle">Métricas y control de stock de Sneakers Shaday</p>
+        </div>
+
+        <div class="topbar-user">
+          <div class="db-indicator" id="adminDbStatus">
+            <span class="status-dot"></span> Sincronizado
+          </div>
+          <div class="user-chip">
+            <div class="user-avatar"><i class="fa-solid fa-user-shield"></i></div>
+            <div class="user-info">
+              <strong id="adminUserName">Admin Shaday</strong>
+              <span id="adminUserRole">Dueño de Tienda</span>
+            </div>
+          </div>
+          <button onclick="logoutAdmin()" class="btn-action" style="color:#ef4444; border-color:#fee2e2;" title="Cerrar Sesión">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="admin-content">
+
+        <!-- ================= PANE 1: DASHBOARD ================= -->
+        <section class="tab-pane active" id="pane-dashboard">
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon icon-blue"><i class="fa-solid fa-shoe-prints"></i></div>
+              <div class="kpi-data">
+                <span class="kpi-label">Modelos en Catálogo</span>
+                <h3 id="kpiTotalProducts">0</h3>
+                <span class="kpi-sub">Total de siluetas activas</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon icon-orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div class="kpi-data">
+                <span class="kpi-label">Pares en Stock Bajo</span>
+                <h3 id="kpiLowStock">0</h3>
+                <span class="kpi-sub text-danger">Existencias ≤ 2 pares</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon icon-green"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+              <div class="kpi-data">
+                <span class="kpi-label">Ventas Registradas</span>
+                <h3 id="kpiTotalSales">0 Bs.</h3>
+                <span class="kpi-sub text-success">Total acumulado</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon icon-purple"><i class="fa-solid fa-wallet"></i></div>
+              <div class="kpi-data">
+                <span class="kpi-label">Inversión en Compras</span>
+                <h3 id="kpiTotalPurchases">0 Bs.</h3>
+                <span class="kpi-sub">Adquisición a proveedores</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-actions-bar">
+            <h4><i class="fa-solid fa-bolt"></i> Acciones Rápidas</h4>
+            <div class="actions-group">
+              <button class="btn-action" onclick="openNewProductModal()"><i class="fa-solid fa-plus"></i> Nuevo Sneaker</button>
+              <button class="btn-action" onclick="openNewPurchaseModal()"><i class="fa-solid fa-cart-plus"></i> Registrar Compra / Lote</button>
+              <button class="btn-action" onclick="openNewSaleModal()"><i class="fa-solid fa-bag-shopping"></i> Registrar Venta</button>
+              <button class="btn-action" onclick="openNewUserModal()"><i class="fa-solid fa-user-plus"></i> Añadir Vendedor</button>
+            </div>
+          </div>
+
+          <div class="dashboard-tables-grid">
+            <div class="card-box">
+              <div class="card-box-header">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Últimas Ventas Realizadas</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Producto</th>
+                      <th>Talla</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashSalesList"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card-box">
+              <div class="card-box-header">
+                <h3><i class="fa-solid fa-bell"></i> Alerta de Stock por Modelo</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Modelo</th>
+                      <th>Marca</th>
+                      <th>Stock Total</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashStockList"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PANE 2: PRODUCTOS ================= -->
+        <section class="tab-pane" id="pane-productos">
+          <div class="pane-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="productSearchInput" placeholder="Buscar sneaker por nombre o marca..." />
+            </div>
+            <button class="btn-primary" onclick="openNewProductModal()">
+              <i class="fa-solid fa-plus"></i> Añadir Nuevo Sneaker
+            </button>
+          </div>
+
+          <div class="card-box">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Foto</th>
+                    <th>Modelo</th>
+                    <th>Marca</th>
+                    <th>Precio Venta</th>
+                    <th>Tallas Disponibles</th>
+                    <th>Badge</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PANE 3: COMPRAS ================= -->
+        <section class="tab-pane" id="pane-compras">
+          <div class="pane-toolbar">
+            <div class="pane-intro">
+              <h3>Registro de Compras e Ingreso de Lotes</h3>
+              <p>Anota adquisiciones de proveedores con su respectivo detalle.</p>
+            </div>
+            <button class="btn-primary" onclick="openNewPurchaseModal()">
+              <i class="fa-solid fa-cart-plus"></i> Registrar Nueva Compra
+            </button>
+          </div>
+
+          <div class="card-box">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID Compra</th>
+                    <th>Fecha</th>
+                    <th>Proveedor</th>
+                    <th>Comprobante</th>
+                    <th>Pares Adquiridos</th>
+                    <th>Costo Total</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="purchasesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PANE 4: VENTAS ================= -->
+        <section class="tab-pane" id="pane-ventas">
+          <div class="pane-toolbar">
+            <div class="pane-intro">
+              <h3>Historial de Ventas Concretadas</h3>
+              <p>Control de pedidos confirmados por WhatsApp o despachos en local.</p>
+            </div>
+            <button class="btn-primary" onclick="openNewSaleModal()">
+              <i class="fa-solid fa-plus"></i> Registrar Venta
+            </button>
+          </div>
+
+          <div class="card-box">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Cliente</th>
+                    <th>Sneaker Adquirido</th>
+                    <th>Talla</th>
+                    <th>Método de Pago</th>
+                    <th>Monto Cobrado</th>
+                  </tr>
+                </thead>
+                <tbody id="salesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PANE 5: PROVEEDORES ================= -->
+        <section class="tab-pane" id="pane-proveedores">
+          <div class="pane-toolbar">
+            <div class="pane-intro">
+              <h3>Directorio de Proveedores y Distribuidores</h3>
+              <p>Contactos comerciales y mayoristas de sneakers.</p>
+            </div>
+            <button class="btn-primary" onclick="openNewProviderModal()">
+              <i class="fa-solid fa-user-plus"></i> Añadir Proveedor
+            </button>
+          </div>
+          <div class="providers-grid" id="providersGrid"></div>
+        </section>
+
+        <!-- ================= PANE 6: USUARIOS Y VENDEDORES (NUEVO) ================= -->
+        <section class="tab-pane" id="pane-usuarios">
+          <div class="pane-toolbar">
+            <div class="pane-intro">
+              <h3>Gestión de Usuarios y Personal de Ventas</h3>
+              <p>El dueño de la tienda puede crear cuentas con permisos para nuevos vendedores o administradores.</p>
+            </div>
+            <button class="btn-primary" onclick="openNewUserModal()">
+              <i class="fa-solid fa-user-shield"></i> Registrar Nuevo Vendedor
+            </button>
+          </div>
+
+          <div class="card-box">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nombre Completo</th>
+                    <th>Correo Electrónico</th>
+                    <th>Rol / Permiso</th>
+                    <th>Fecha de Alta</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= MODAL: NUEVO PRODUCTO ================= -->
+  <div class="modal-backdrop" id="modalProduct">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modalProductTitle"><i class="fa-solid fa-shoe-prints"></i> Añadir Nuevo Sneaker al Catálogo</h3>
+        <button class="btn-close" onclick="closeModal('modalProduct')">&times;</button>
+      </div>
+      <form id="productForm" onsubmit="handleSaveProduct(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label>Nombre del Modelo *</label>
+              <input type="text" id="pName" placeholder="Ej: Air Jordan 4 Retro White Cement" required />
+            </div>
+            <div class="form-group flex-1">
+              <label>Marca *</label>
+              <select id="pBrand" required>
+                <option value="Jordan">Jordan</option>
+                <option value="Nike">Nike</option>
+                <option value="Adidas">Adidas</option>
+                <option value="New Balance">New Balance</option>
+                <option value="Vans">Vans</option>
+                <option value="Puma">Puma</option>
+                <option value="Converse">Converse</option>
+                <option value="ASICS">ASICS</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Precio de Venta al Público (Bs.) *</label>
+              <input type="number" id="pPrice" placeholder="Ej: 850" min="1" required />
+            </div>
+            <div class="form-group">
+              <label>Insignia / Badge</label>
+              <select id="pBadge">
+                <option value="Disponible">Disponible</option>
+                <option value="Nuevo">Nuevo Drop</option>
+                <option value="Más Vendido">Más Vendido</option>
+                <option value="Drop Exclusivo">Drop Exclusivo</option>
+                <option value="Colección">Colección</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Fotografía del Sneaker (Se reflejará en la tienda web) *</label>
+            <div class="image-uploader-box">
+              <div class="upload-trigger" onclick="document.getElementById('pImageFile').click()">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <p>Haz clic para subir la foto desde tu dispositivo</p>
+                <span>Formatos admitidos: JPG, PNG, WEBP</span>
+              </div>
+              <input type="file" id="pImageFile" accept="image/*" style="display: none;" onchange="handleImagePreview(event)" />
+              <div class="image-preview-wrapper" id="previewContainer" style="display: none;">
+                <img id="imagePreview" src="" alt="Vista previa" />
+                <button type="button" class="btn-remove-preview" onclick="removeSelectedImage()">&times;</button>
+              </div>
+            </div>
+            <small class="help-text">O pega un enlace web directo de imagen:</small>
+            <input type="url" id="pImageUrl" placeholder="https://ejemplo.com/foto.jpg" oninput="handleUrlImagePreview(this.value)" />
+          </div>
+
+          <div class="form-group">
+            <label>Tallas Disponibles en Almacén:</label>
+            <div class="sizes-checkbox-grid">
+              <label class="size-check"><input type="checkbox" name="pSizes" value="37"> 37</label>
+              <label class="size-check"><input type="checkbox" name="pSizes" value="38"> 38</label>
+              <label class="size-check"><input type="checkbox" name="pSizes" value="39"> 39</label>
+              <label class="size-check"><input type="checkbox" name="pSizes" value="40" checked> 40</label>
+              <label class="size-check"><input type="checkbox" name="pSizes" value="41" checked> 41</label>
+              <label class="size-check"><input type="checkbox" name="pSizes" value="42" checked> 42</label>
+              <label class="size-check"><input type="checkbox" name="pSizes" value="43"> 43</label>
+              <label class="size-check"><input type="checkbox" name="pSizes" value="44"> 44</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Descripción / Ficha Técnica</label>
+            <textarea id="pDesc" rows="3" placeholder="Detalles de materiales y amortiguación..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modalProduct')">Cancelar</button>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar en Catálogo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: REGISTRAR COMPRA ================= -->
+  <div class="modal-backdrop" id="modalPurchase">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-cart-flatbed"></i> Ingreso de Nueva Compra / Lote</h3>
+        <button class="btn-close" onclick="closeModal('modalPurchase')">&times;</button>
+      </div>
+      <form id="purchaseForm" onsubmit="handleSavePurchase(event)">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Proveedor *</label>
+              <select id="purProvider" required></select>
+            </div>
+            <div class="form-group">
+              <label>N° Factura / Nota</label>
+              <input type="text" id="purInvoice" placeholder="Ej: FAC-8492" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Sneaker Comprado *</label>
+            <select id="purProduct" required></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Cantidad de Pares *</label>
+              <input type="number" id="purQty" min="1" value="5" oninput="calcPurchaseTotal()" required />
+            </div>
+            <div class="form-group">
+              <label>Costo Unitario (Bs.) *</label>
+              <input type="number" id="purCost" min="1" placeholder="Ej: 450" oninput="calcPurchaseTotal()" required />
+            </div>
+          </div>
+          <div class="total-preview-box">
+            <span>Inversión Total:</span>
+            <strong id="purchaseTotalPreview">0 Bs.</strong>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modalPurchase')">Cancelar</button>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-check"></i> Registrar Ingreso</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: REGISTRAR VENTA ================= -->
+  <div class="modal-backdrop" id="modalSale">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-receipt"></i> Registrar Venta Concretada</h3>
+        <button class="btn-close" onclick="closeModal('modalSale')">&times;</button>
+      </div>
+      <form id="saleForm" onsubmit="handleSaveSale(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre del Cliente</label>
+            <input type="text" id="saleCustomer" placeholder="Ej: Carlos Suárez" required />
+          </div>
+          <div class="form-group">
+            <label>Sneaker Vendido *</label>
+            <select id="saleProduct" onchange="updateSalePriceAuto()" required></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Talla Entregada *</label>
+              <select id="saleSize" required>
+                <option value="38">38</option>
+                <option value="39">39</option>
+                <option value="40" selected>40</option>
+                <option value="41">41</option>
+                <option value="42">42</option>
+                <option value="43">43</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Método de Cobro</label>
+              <select id="saleMethod">
+                <option value="QR Simple (Transferencia)">QR Simple (Transferencia)</option>
+                <option value="Efectivo en Tienda">Efectivo en Tienda</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Monto Cobrado (Bs.) *</label>
+            <input type="number" id="salePrice" min="1" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modalSale')">Cancelar</button>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-cash-register"></i> Confirmar Venta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NUEVO PROVEEDOR ================= -->
+  <div class="modal-backdrop" id="modalProvider">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-truck-ramp-box"></i> Registrar Proveedor</h3>
+        <button class="btn-close" onclick="closeModal('modalProvider')">&times;</button>
+      </div>
+      <form id="providerForm" onsubmit="handleSaveProvider(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre o Razón Social *</label>
+            <input type="text" id="provName" placeholder="Ej: Falabella Chile / Mayorista Kicks" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Teléfono / WhatsApp *</label>
+              <input type="text" id="provPhone" placeholder="+591 70000000" required />
+            </div>
+            <div class="form-group">
+              <label>Ciudad / Origen</label>
+              <input type="text" id="provCity" placeholder="Santa Cruz" value="Santa Cruz" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Marcas que Distribuye</label>
+            <input type="text" id="provBrands" placeholder="Nike, Jordan, Adidas..." />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modalProvider')">Cancelar</button>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Guardar Proveedor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NUEVO USUARIO / VENDEDOR (NUEVO) ================= -->
+  <div class="modal-backdrop" id="modalUser">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-plus"></i> Registrar Nuevo Usuario o Vendedor</h3>
+        <button class="btn-close" onclick="closeModal('modalUser')">&times;</button>
+      </div>
+      <form id="userForm" onsubmit="handleSaveUser(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nombre y Apellido *</label>
+            <input type="text" id="uName" placeholder="Ej: Marco Antonio Soliz" required />
+          </div>
+          <div class="form-group">
+            <label>Correo Electrónico *</label>
+            <input type="email" id="uEmail" placeholder="vendedor1@shaday.com" required />
+          </div>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label>Rol / Permiso *</label>
+              <select id="uRole" required>
+                <option value="vendedor">Vendedor (Atención y Ventas)</option>
+                <option value="admin">Administrador (Control Total)</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label>Contraseña *</label>
+              <input type="password" id="uPassword" placeholder="••••••••" minlength="6" required />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modalUser')">Cancelar</button>
+          <button type="submit" class="btn-primary"><i class="fa-solid fa-user-check"></i> Crear Usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

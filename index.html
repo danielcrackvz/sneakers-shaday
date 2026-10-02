@@ -4,23 +4,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sneakers Shaday | Tienda de Sneakers Urbanos</title>
-  <meta name="description" content="Catálogo de sneakers urbanos y zapatillas de colección en Santa Cruz - Bolivia. Sneakers Shaday con Supabase." />
+  <meta name="description" content="Catálogo de sneakers urbanos en Santa Cruz - Bolivia. Sneakers Shaday." />
   
-  <!-- Google Fonts & Iconos (FontAwesome) -->
+  <!-- Tipografía & Iconos -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <!-- SDK OFICIAL DE SUPABASE -->
+  <!-- SDK Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Hoja de estilos personalizada -->
+  <!-- Estilos -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- Barra superior informativa con estado de base de datos -->
+  <!-- Barra superior -->
   <div class="top-announcement">
     <p>
       <i class="fa-solid fa-truck-fast"></i> Envíos a toda Bolivia | Entregas directas en Santa Cruz y Warnes
@@ -30,7 +30,7 @@
     </p>
   </div>
 
-  <!-- Cabecera y Navegación Principal -->
+  <!-- Cabecera Principal -->
   <header class="main-header">
     <div class="header-container">
       <a href="#" class="brand-logo">
@@ -38,15 +38,23 @@
         <span>SHADAY<span>.</span></span>
       </a>
 
-      <!-- Buscador en tiempo real -->
+      <!-- Buscador -->
       <div class="search-bar">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" placeholder="Buscar entre los 30 modelos por nombre o marca..." />
+        <input type="text" id="searchInput" placeholder="Buscar por marca, modelo o color..." />
       </div>
 
       <!-- Acciones de cabecera -->
       <div class="header-actions">
         <a href="#catalogo" class="nav-btn"><i class="fa-solid fa-fire"></i> Catálogo</a>
+        
+        <!-- BOTÓN DE USUARIO / INICIAR SESIÓN -->
+        <div id="authHeaderContainer">
+          <button id="authBtn" class="nav-btn" onclick="openAuthModal()">
+            <i class="fa-solid fa-user"></i> Iniciar Sesión
+          </button>
+        </div>
+
         <button id="cartBtn" class="cart-button" title="Ver Carrito">
           <i class="fa-solid fa-bag-shopping"></i>
           <span id="cartCount" class="cart-badge">0</span>
@@ -55,12 +63,12 @@
     </div>
   </header>
 
-  <!-- Banner Principal / Hero -->
+  <!-- Banner Hero -->
   <section class="hero-section">
     <div class="hero-content">
       <span class="hero-tag"><i class="fa-solid fa-bolt"></i> Nueva Colección Urbana 2026</span>
       <h1>EL DROP QUE ESTABAS ESPERANDO</h1>
-      <p>Catálogo completo conectado en tiempo real con Supabase. Zapatillas originales con entregas y confirmación vía WhatsApp.</p>
+      <p>Catálogo exclusivo conectado en tiempo real. Zapatillas originales con entregas y confirmación vía WhatsApp.</p>
       <div class="hero-buttons">
         <a href="#catalogo" class="btn-primary"><i class="fa-solid fa-bag-shopping"></i> Explorar Catálogo</a>
         <a href="https://wa.me/59175512345?text=Hola%20Sneakers%20Shaday,%20quiero%20hacer%20una%20consulta" target="_blank" class="btn-secondary">
@@ -73,7 +81,7 @@
     </div>
   </section>
 
-  <!-- Filtros y Navegación de Categorías -->
+  <!-- Catálogo -->
   <section class="catalog-section" id="catalogo">
     <div class="section-header">
       <div>
@@ -85,7 +93,7 @@
       </div>
     </div>
 
-    <!-- Barra de Filtros -->
+    <!-- Filtros -->
     <div class="filters-container">
       <div class="category-pills" id="categoryPills">
         <button class="pill active" data-category="todos">Todos</button>
@@ -98,7 +106,6 @@
       </div>
 
       <div class="secondary-filters">
-        <!-- Filtro por Talla -->
         <select id="sizeFilter" class="filter-select">
           <option value="">Todas las Tallas</option>
           <option value="37">Talla 37</option>
@@ -111,7 +118,6 @@
           <option value="44">Talla 44</option>
         </select>
 
-        <!-- Filtro por Precio -->
         <select id="sortFilter" class="filter-select">
           <option value="default">Ordenar: Novedades</option>
           <option value="price-asc">Precio: Menor a Mayor</option>
@@ -120,23 +126,21 @@
       </div>
     </div>
 
-    <!-- Grid de Productos -->
-    <div class="products-grid" id="productsGrid">
-      <!-- Se inyecta dinámicamente desde Supabase -->
-    </div>
+    <!-- Grid de Sneakers -->
+    <div class="products-grid" id="productsGrid"></div>
   </section>
 
-  <!-- Ventajas / Confianza -->
+  <!-- Ventajas -->
   <section class="features-section">
     <div class="feature-card">
       <div class="feature-icon"><i class="fa-solid fa-database"></i></div>
       <h3>Base de Datos en Tiempo Real</h3>
-      <p>Consultas fluidas a Supabase sin recargas lentas ni caídas de servidor.</p>
+      <p>Sincronización con Supabase sin recargas lentas de servidor.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon"><i class="fa-solid fa-qrcode"></i></div>
       <h3>Pago con Código QR</h3>
-      <p>Aceptamos pagos directos por QR simple del Banco Central de Bolivia y transferencias.</p>
+      <p>Aceptamos pagos por QR simple del Banco Central de Bolivia y transferencias bancarias.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon"><i class="fa-brands fa-whatsapp"></i></div>
@@ -145,28 +149,78 @@
     </div>
   </section>
 
+  <!-- ================= MODAL DE AUTENTICACIÓN (LOGIN Y REGISTRO) ================= -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-content" style="max-width: 440px; padding: 28px;">
+      <button class="close-modal-btn" onclick="closeAuthModal()">&times;</button>
+      
+      <div class="auth-tabs" style="display:flex; gap:10px; margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
+        <button id="tabLoginBtn" class="pill active" style="flex:1;" onclick="switchAuthTab('login')">Iniciar Sesión</button>
+        <button id="tabRegisterBtn" class="pill" style="flex:1;" onclick="switchAuthTab('register')">Registrarse</button>
+      </div>
+
+      <!-- FORMULARIO 1: LOGIN -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <h3 style="margin-bottom: 6px; font-weight:800;">Bienvenido de nuevo</h3>
+        <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px;">Ingresa tus credenciales para acceder</p>
+        
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label style="font-size:0.8rem; font-weight:700;">Correo Electrónico</label>
+            <input type="email" id="loginEmail" placeholder="admin@shaday.com o tu email" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-top:4px;" />
+          </div>
+          <div>
+            <label style="font-size:0.8rem; font-weight:700;">Contraseña</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-top:4px;" />
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:10px;">
+            <i class="fa-solid fa-right-to-bracket"></i> Acceder
+          </button>
+        </div>
+      </form>
+
+      <!-- FORMULARIO 2: REGISTRO -->
+      <form id="registerForm" onsubmit="handleRegister(event)" style="display:none;">
+        <h3 style="margin-bottom: 6px; font-weight:800;">Crear Cuenta</h3>
+        <p style="color:#64748b; font-size:0.85rem; margin-bottom:16px;">Regístrate para guardar favoritos y gestionar compras</p>
+        
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label style="font-size:0.8rem; font-weight:700;">Nombre Completo</label>
+            <input type="text" id="regName" placeholder="Tu nombre y apellido" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-top:4px;" />
+          </div>
+          <div>
+            <label style="font-size:0.8rem; font-weight:700;">Correo Electrónico</label>
+            <input type="email" id="regEmail" placeholder="correo@ejemplo.com" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-top:4px;" />
+          </div>
+          <div>
+            <label style="font-size:0.8rem; font-weight:700;">Contraseña (mínimo 6 caracteres)</label>
+            <input type="password" id="regPassword" placeholder="••••••••" minlength="6" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-top:4px;" />
+          </div>
+          <button type="submit" class="btn-primary" style="width:100%; justify-content:center; margin-top:10px;">
+            <i class="fa-solid fa-user-plus"></i> Registrarme
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: DETALLE DEL PRODUCTO -->
   <div class="modal-overlay" id="productModal">
     <div class="modal-content">
       <button class="close-modal-btn" id="closeModal">&times;</button>
-      <div class="modal-body" id="modalProductDetails">
-        <!-- Inyectado por JS -->
-      </div>
+      <div class="modal-body" id="modalProductDetails"></div>
     </div>
   </div>
 
-  <!-- PANEL LATERAL: CARRITO DE COMPRAS -->
+  <!-- CARRITO LATERAL -->
   <div class="cart-drawer-overlay" id="cartOverlay"></div>
   <aside class="cart-drawer" id="cartDrawer">
     <div class="cart-drawer-header">
       <h3><i class="fa-solid fa-bag-shopping"></i> Tu Carrito</h3>
       <button class="close-cart-btn" id="closeCart">&times;</button>
     </div>
-
-    <div class="cart-items-container" id="cartItemsList">
-      <!-- Elementos del carrito inyectados por JS -->
-    </div>
-
+    <div class="cart-items-container" id="cartItemsList"></div>
     <div class="cart-drawer-footer">
       <div class="cart-subtotal">
         <span>Total estimado:</span>
@@ -179,7 +233,7 @@
     </div>
   </aside>
 
-  <!-- Pie de Página -->
+  <!-- Footer -->
   <footer class="main-footer">
     <div class="footer-container">
       <div class="footer-col">
@@ -194,7 +248,7 @@
       <div class="footer-col">
         <h4>Tecnología Implementada</h4>
         <p><i class="fa-brands fa-js"></i> HTML5, CSS3, JavaScript Vanilla</p>
-        <p><i class="fa-solid fa-database"></i> Supabase (PostgreSQL Cloud)</p>
+        <p><i class="fa-solid fa-database"></i> Supabase (Auth + PostgreSQL Cloud)</p>
       </div>
     </div>
     <div class="footer-bottom">
@@ -202,7 +256,6 @@
     </div>
   </footer>
 
-  <!-- Script Principal -->
   <script src="app.js"></script>
 </body>
 </html>
